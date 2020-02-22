@@ -28,7 +28,7 @@ bot.on('message', msg => {
             //.setThumbnail(msg.author.avatarURL)
             .attachFiles(['DaUser.png'])
             .setImage('attachment://DaUser.png')
-            .setFooter('TEST FOOTER')
+            .setFooter('Testing of footer! :)')
             .setColor(0xF1C40F)
             msg.channel.sendEmbed(embed);
         default:
