@@ -5,6 +5,8 @@ const token = process.env.DISCORD_TOKEN;
 
 const PREFIX = '!';
 
+bot.login(token);
+
 bot.on('ready', () => {
     console.log('Online!');
 })
@@ -34,10 +36,15 @@ bot.on('message', msg => {
             msg.channel.sendEmbed(embed);
         case 'hello':
             msg.channel.sendMessage("HELLO!!!");
+        case 'helperi':
+            msg.channel.sendCode("",
+                "I only have this command:\n" +
+                "  !hello -> reply HELLO\n" +
+                "  !codetest -> idk what am i doing\n" +
+                "  !randomnum -> randomly generate number :O\n" +
+                "  !ping -> reply pong\n" +
+                "  !embed -> some stuff i'm testing");
         default:
             break;
     }
-}) 
-
-bot.login(token);
-
+})
