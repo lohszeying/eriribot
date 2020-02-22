@@ -1,0 +1,14 @@
+{
+  "name": "eriri-bot",
+  "version": "1.0.0",
+  "description": "First discord bot",
+  "main": "bot.js",
+  "scripts": {
+    "test": "!"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  }
+}
