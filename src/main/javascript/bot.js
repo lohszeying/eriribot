@@ -32,6 +32,8 @@ bot.on('message', msg => {
             .setFooter('Testing of footer! :)')
             .setColor(0xF1C40F)
             msg.channel.sendEmbed(embed);
+        case 'hello':
+            msg.channel.sendMessage("HELLO!!!");
         default:
             break;
     }
