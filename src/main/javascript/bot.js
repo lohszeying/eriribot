@@ -9,6 +9,7 @@ bot.login(token);
 
 bot.on('ready', () => {
     console.log('Online!');
+    bot.user.setActivity('!helperi', {type: "PLAYING"}).catch(console.error);
 })
 
 bot.on('message', msg => {
@@ -22,10 +23,9 @@ bot.on('message', msg => {
             var ran = Math.floor(Math.random() * 10000000);
             msg.channel.sendMessage(ran);
             break;
-        case 'codetest':
-            msg.channel.sendCode("Java", "Hello");
         case 'embed':
-            const embed = new Discord.RichEmbed()
+            commands.embed(msg);
+            /*const embed = new Discord.RichEmbed()
             .setTitle("User info")
             .addField('Name', msg.author.username)
             //.setThumbnail(msg.author.avatarURL)
@@ -33,18 +33,40 @@ bot.on('message', msg => {
             .setImage('attachment://DaUser.png')
             .setFooter('Testing of footer! :)')
             .setColor(0xF1C40F)
-            msg.channel.sendEmbed(embed);
+            msg.channel.sendEmbed(embed); */
+            break;
         case 'hello':
             msg.channel.sendMessage("HELLO!!!");
+            break;
         case 'helperi':
-            msg.channel.sendCode("",
-                "I only have this command:\n" +
-                "  !hello -> reply HELLO\n" +
-                "  !codetest -> idk what am i doing\n" +
-                "  !randomnum -> randomly generate number :O\n" +
-                "  !ping -> reply pong\n" +
-                "  !embed -> some stuff i'm testing");
+            commands.helperi(msg);
+            /*msg.channel.sendCode("",
+                commands.helperi());*/
+            break;
         default:
             break;
     }
 })
+
+commands = new Object();
+commands.helperi = function(msg) {
+    //To only return text, refer to this tutorial: http://www.javascriptkit.com/javatutors/oopjs.shtml
+    const txt = "I only have this command:\n\n" +
+                "!hello -> reply HELLO\n" +
+                "!randomnum -> randomly generate number :O\n" +
+                "!ping -> reply pong\n" +
+                "!embed -> some stuff i'm testing";
+    msg.channel.sendCode("", txt);
+}
+
+commands.embed = function(msg) {
+    const embed = new Discord.RichEmbed()
+            .setTitle("Testing title! :)")
+            .addField('Name', msg.author.username)
+            //.setThumbnail(msg.author.avatarURL)
+            .attachFiles(['DaUser.png'])
+            .setImage('attachment://DaUser.png')
+            .setFooter('Testing of footer! :)')
+            .setColor(0xF1C40F)
+            msg.channel.sendEmbed(embed);
+}
