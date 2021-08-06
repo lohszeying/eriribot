@@ -1,4 +1,4 @@
 # Default ignored files
 /workspace.xml
 
-/src/main/javascript/token.txt
+src/main/javascript/token.txt
