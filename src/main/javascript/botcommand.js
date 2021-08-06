@@ -1,27 +1,7 @@
 const Discord = require('discord.js');
-const bot = new Discord.Client();
-const func = require('./botcommand');
 
-const token = process.env.DISCORD_TOKEN;
-
-const PREFIX = '!';
-
-bot.login(token);
-
-bot.on('ready', () => {
-    console.log('Online!');
-    bot.user.setActivity('!helperi', {type: "PLAYING"}).catch(console.error);
-})
-
-bot.on('message', msg => {
-    let args = msg.content.substring(PREFIX.length).split(" ");
-    func.UserCommand(msg, args[0]);
-});
-
-/*
-bot.on('message', msg => {
-    let args = msg.content.substring(PREFIX.length).split(" ");
-    switch (args[0]) {
+function UserCommand(msg, arg) {
+    switch (arg) {
         case 'ping':
             //msg.channel.sendMessage('pong!');
             msg.reply('pong!')
@@ -43,7 +23,7 @@ bot.on('message', msg => {
         default:
             break;
     }
-})
+}
 
 commands = new Object();
 commands.helperi = function(msg) {
@@ -66,4 +46,6 @@ commands.embed = function(msg) {
             .setFooter('Testing of footer! :)')
             .setColor(0xF1C40F)
             msg.channel.sendEmbed(embed);
-} */
+}
+
+module.exports = {UserCommand}
