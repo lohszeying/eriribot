@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
-const func = require('./botcommand');
+const botcommand = require('./botcommand');
+require('dotenv').config();
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -15,7 +16,7 @@ bot.on('ready', () => {
 
 bot.on('message', msg => {
     let args = msg.content.substring(PREFIX.length).split(" ");
-    func.UserCommand(msg, args[0]);
+    botcommand.UserCommand(msg, args[0]);
 });
 
 /*
