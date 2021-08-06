@@ -48,4 +48,4 @@ commands.embed = function(msg) {
             msg.channel.sendEmbed(embed);
 }
 
-module.exports = {UserCommand}
+module.exports = { UserCommand };
