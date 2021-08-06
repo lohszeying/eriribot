@@ -1,6 +1,7 @@
 # Default ignored files
 /workspace.xml
 .DS_Store
+.env
 
 src/main/javascript/token.txt
 src/main/javascript/.env

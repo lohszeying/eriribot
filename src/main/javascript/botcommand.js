@@ -42,9 +42,9 @@ commands.embed = function(msg) {
     const embed = new Discord.RichEmbed()
             .setTitle("Testing title! :)")
             .addField('Name', msg.author.username)
-            //.setThumbnail(msg.author.avatarURL)
-            .attachFiles(['DaUser.png'])
-            .setImage('attachment://DaUser.png')
+            //Previous file path was .attachFiles(['DaUser.png'])
+            .attachFiles(['src/main/javascript/DaUser.png'])
+            .setImage('attachment://src/main/javascript/DaUser.png')
             .setFooter('Testing of footer! :)')
             .setColor(0xF1C40F)
             msg.channel.sendEmbed(embed);
