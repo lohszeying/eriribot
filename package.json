@@ -4,7 +4,8 @@
   "description": "Root folder package json",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "!",
+    "start": "node src/main/javascript/bot.js"
   },
   "repository": {
     "type": "git",
