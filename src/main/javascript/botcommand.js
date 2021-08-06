@@ -1,9 +1,8 @@
 ﻿const Discord = require('discord.js');
 
 function UserCommand(msg, arg) {
-    switch (arg) {
+    switch (arg[0]) {
         case 'ping':
-            //msg.channel.sendMessage('pong!');
             msg.reply('pong!')
             break;
         case 'randomnum':
@@ -18,10 +17,13 @@ function UserCommand(msg, arg) {
             break;
         case 'helperi':
             commands.helperi(msg);
-            //msg.channel.sendCode("", commands.helperi());
             break;
         case 'react':
             msg.react('😊');
+            break;
+        case 'whatismyusername':
+            msg.reply('Your username is: ' + msg.author.username);
+            break;
         default:
             break;
     }
@@ -29,12 +31,13 @@ function UserCommand(msg, arg) {
 
 commands = new Object();
 commands.helperi = function(msg) {
-    //To only return text, refer to this tutorial: http://www.javascriptkit.com/javatutors/oopjs.shtml
     const txt = "I only have this command:\n\n" +
-                "!hello -> reply HELLO\n" +
-                "!randomnum -> randomly generate number :O\n" +
-                "!ping -> reply pong\n" +
-                "!embed -> some stuff i'm testing";
+        "!hello -> reply HELLO\n" +
+        "!randomnum -> randomly generate number :O\n" +
+        "!ping -> reply pong\n" +
+        "!embed -> some stuff i'm testing\n" +
+        "!react -> I will react to your message\n" +
+        "!whatismyusername -> I will reply you your username";
     msg.channel.sendCode("", txt);
 }
 

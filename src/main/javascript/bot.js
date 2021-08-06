@@ -16,7 +16,7 @@ bot.on('ready', () => {
 
 bot.on('message', msg => {
     let args = msg.content.substring(PREFIX.length).split(" ");
-    botcommand.UserCommand(msg, args[0]);
+    botcommand.UserCommand(msg, args);
 });
 
 /*
