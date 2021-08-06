@@ -1,7 +1,7 @@
 {
   "name": "eriribot",
   "version": "1.0.0",
-  "description": "Root folder package json",
+  "description": "Root folder of discord bot",
   "main": "index.js",
   "scripts": {
     "test": "!",

@@ -1,11 +1,10 @@
 {
   "name": "eriri-bot",
   "version": "1.0.0",
-  "description": "First discord bot",
+  "description": "First discord bot, folder for bot related",
   "main": "bot.js",
   "scripts": {
-    "test": "!",
-    "start": "node bot.js"
+    "test": "!"
   },
   "author": "",
   "license": "ISC",
