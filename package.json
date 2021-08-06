@@ -1,0 +1,19 @@
+{
+  "name": "eriribot",
+  "version": "1.0.0",
+  "description": "Root folder package json",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lohszeying/eriribot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lohszeying/eriribot/issues"
+  },
+  "homepage": "https://github.com/lohszeying/eriribot#readme"
+}

@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+﻿const Discord = require('discord.js');
 
 function UserCommand(msg, arg) {
     switch (arg) {
@@ -20,6 +20,8 @@ function UserCommand(msg, arg) {
             commands.helperi(msg);
             //msg.channel.sendCode("", commands.helperi());
             break;
+        case 'react':
+            msg.react('😊');
         default:
             break;
     }
