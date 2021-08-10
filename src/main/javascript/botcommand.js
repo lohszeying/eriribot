@@ -24,6 +24,15 @@ function UserCommand(msg, arg) {
         case 'whatismyusername':
             msg.reply('Your username is: ' + msg.author.username);
             break;
+        case 'echo':
+            const newMsg = msg.content.replace("!", "").replace("echo", "").trim();
+            if (!newMsg) {
+                msg.channel.sendMessage("Nothing to echo");
+            } else {
+                msg.channel.sendMessage(newMsg);
+            }
+            
+            break;
         default:
             break;
     }
@@ -37,6 +46,7 @@ commands.helperi = function(msg) {
         "!ping -> reply pong\n" +
         "!embed -> some stuff i'm testing\n" +
         "!react -> I will react to your message\n" +
+        "!echo -> I will echo your message\n" +
         "!whatismyusername -> I will reply you your username";
     msg.channel.sendCode("", txt);
 }
