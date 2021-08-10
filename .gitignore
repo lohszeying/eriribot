@@ -2,6 +2,8 @@
 /workspace.xml
 .DS_Store
 .env
+.idea/
+.vs/
 
 src/main/javascript/token.txt
 src/main/javascript/.env
