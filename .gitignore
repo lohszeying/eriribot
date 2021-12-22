@@ -4,6 +4,6 @@
 .env
 .idea/
 .vs/
+node_modules/
 
 src/main/javascript/token.txt
-src/main/javascript/.env

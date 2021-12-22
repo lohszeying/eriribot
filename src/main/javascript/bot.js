@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const botcommand = require('./botcommand');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const token = process.env.DISCORD_TOKEN;
@@ -9,8 +10,12 @@ const PREFIX = '!';
 
 bot.login(token);
 
-bot.on('ready', () => {
+bot.on('ready', async () => {
     console.log('Online!');
+    await mongoose.connect(process.env.MONGO_URI, {
+        keepAlive: true //only create 1 mongodb connection
+    })
+
     bot.user.setActivity('!helperi', {type: "PLAYING"}).catch(console.error);
 })
 
