@@ -11,4 +11,4 @@ const schema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('todolist', schema, 'todolist');
+module.exports = mongoose.model('task', schema, 'task');
