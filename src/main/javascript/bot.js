@@ -16,12 +16,12 @@ bot.on('ready', async () => {
         keepAlive: true //only create 1 mongodb connection
     })
 
-    bot.user.setActivity('!helperi', {type: "PLAYING"}).catch(console.error);
+    bot.user.setActivity('!help', {type: "PLAYING"}).catch(console.error);
 })
 
 bot.on('message', msg => {
     let args = msg.content.substring(PREFIX.length).split(" ");
-    botcommand.UserCommand(msg, args);
+    botcommand.UserCommand(msg, PREFIX, args);
 });
 
 /*
