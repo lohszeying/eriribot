@@ -113,11 +113,11 @@ commands.delete = async function(msg, prefix, keyword) {
                     message = message.first();
                     
                     if (!isNaN(message)) {
-                        const numToDel = parseInt(message.content)-1;
+                        const num = parseInt(message.content)-1;
 
                         if (parseInt(message.content) > 0 && parseInt(message.content) <= list.length) {
-                            const taskToDelete = list[numToDel];
-                            await taskSchema.deleteOne(list[numToDel]);
+                            const taskToDelete = list[num];
+                            await taskSchema.deleteOne(list[num]);
                             msg.reply("Successfully deleted task: `" + taskToDelete.message + "`.");
                         } else {
                             msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number within the task list.")

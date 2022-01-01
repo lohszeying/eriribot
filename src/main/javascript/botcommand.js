@@ -1,5 +1,6 @@
 ﻿const taskCommand = require('./Command/Task/taskCommand');
 const miscCommand = require('./Command/Misc/miscCommand');
+const calCommand = require('./Command/PrimogemsCalculator/primogemsCalculatorCommand');
 
 function UserCommand(msg, prefix, arg) {
     const keyword = arg[0];
@@ -48,6 +49,42 @@ function UserCommand(msg, prefix, arg) {
             break;
         case 'howmanydays':
             miscCommand.commands.howManyDays(msg, prefix, keyword);
+            break;
+        case 'helpgems':
+            calCommand.commands.help(msg, prefix, keyword);
+            break;
+        case 'gemsaddcategory':
+            calCommand.commands.addCategory(msg, prefix, keyword);
+            break;
+        case 'gemscategory':
+            calCommand.commands.getCategory(msg, prefix, keyword);
+            break;
+        case 'gemseditcategory':
+            calCommand.commands.editCategory(msg, prefix, keyword);
+            break;
+        case 'gemsdeletecategory':
+            calCommand.commands.deleteCategory(msg, prefix, keyword);
+            break;
+        case 'gemsclearcategory':
+            calCommand.commands.clearCategory(msg, prefix, keyword);
+            break;
+        case 'gemsaddcalculation':
+            calCommand.commands.addCalculation(msg, prefix, keyword);
+            break;
+        case 'gemseditcalculation':
+            calCommand.commands.editCalculation(msg, prefix, keyword);
+            break;
+        case 'gemsdeletecalculation':
+            calCommand.commands.deleteCalculation(msg, prefix, keyword);
+            break;
+        case 'gemsclearcalculation':
+            calCommand.commands.clearCalculation(msg, prefix, keyword);
+            break;
+        case 'gemscalculate':
+            calCommand.commands.calculateCategory(msg, prefix, keyword);
+            break;
+        case 'gemslist':
+            calCommand.commands.getGemsList(msg, prefix, keyword);
             break;
         default:
             break;

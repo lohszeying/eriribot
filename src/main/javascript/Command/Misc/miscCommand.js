@@ -53,7 +53,9 @@ commands.help = function(message, prefix) {
                 [{command: prefix + "taskdel", description: "Delete your saved task"},
                 {command: prefix + "taskclear", description: "Delete all your saved tasks"},
                 {command: prefix + "taskcomplete", description: "Mark a task as completed"},
-                {command: prefix + "taskincomplete", description: "Mark a task as incomplete"}]];
+                {command: prefix + "taskincomplete", description: "Mark a task as incomplete"},
+                {command: prefix + "helpgems", description: "Get a list of commands for primogems calculator"}
+            ]];
             
     let page = 1;
     const embed = new Discord.RichEmbed()
