@@ -82,7 +82,7 @@ commands.addCategory = async function(msg, prefix, keyword) {
     const msgContent = msg.content.replace(prefix + keyword, "").trim();
 
     if (msgContent === '') {
-        msg.reply("Please indicate a new title of calculations to be saved.");
+        msg.reply("Please indicate a new title of calculations to be saved with `" + prefix + keyword + " <category title>`.");
     } else {
         await userSchema.create({
             author: msg.author.id,
@@ -668,6 +668,110 @@ commands.getGemsList = async function(msg, prefix, keyword) {
         embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list total: " + totalGemsNeeded + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
         
         msg.channel.send(embed);
+    }
+}
+
+commands.copyCategory = async function(msg, prefix, keyword) {
+    const msgContent = msg.content.replace(prefix + keyword, "").trim();
+
+    const userList = await userSchema.find({
+        author: msg.author.id
+    })
+
+    if (msgContent === '') {
+        let desc = "";
+        for (var i = 0; i < userList.length; i++) {
+            desc += (i+1) + ": " + userList[i].title + "\n";
+        }
+
+
+        let filter = m => m.author.id === msg.author.id
+        const embed = new Discord.RichEmbed()
+            .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
+            .setTitle("Primogems Calculator Command: Copy category")
+            .addField("Here are list of categories you have saved. Please insert `<category number> <new title>`, for example, `1 Ayato` to copy category number 1 with new title.", desc)
+            .setColor(0xF1C40F)
+        msg.reply(embed).then(() => {
+            msg.channel.awaitMessages(filter, {
+                max: 1,
+                time: 10000,
+                errors: ['time']
+                })
+                .then(async message => {
+                    message = message.first();
+                    const categoryNum = parseInt(message.content) - 1;
+                    if (!isNaN(categoryNum)) {
+                        if (categoryNum+1 > 0 && categoryNum+1 <= userList.length) {
+                            const newCategoryTitle = message.content.replace((categoryNum+1) + " ", "").trim();
+
+                            const categoryID = userList[categoryNum]._id;
+
+                            const categoryListToCopy = await calculatorSchema.find({
+                                category: categoryID
+                            })
+                    
+                            //Create new category
+                            await userSchema.create({
+                                author: msg.author.id,
+                                title: newCategoryTitle
+                            }).then(async res => {
+                                const newID = res._id;
+                    
+                                for (var i = 0; i < categoryListToCopy.length; i++) {
+                                    await calculatorSchema.create({
+                                        quantity: categoryListToCopy[i].quantity,
+                                        amount: categoryListToCopy[i].amount,
+                                        description: categoryListToCopy[i].description,
+                                        author: msg.author.id,
+                                        category: newID
+                                    });
+                                }
+                    
+                                msg.reply("Successfully copied calculations from `" + userList[categoryNum].title + "` to `" + res.title + "`.");
+                            })
+                        } else {
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number followed by new title.")
+                        }
+                    } else {
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number followed by new title.")
+                    }
+                    
+                })
+                .catch(collected => {
+                    console.log(collected);
+                    msg.reply("Timeout. Please redo the command again.");
+                });
+            
+        })
+    } else {
+        /*const categoryNum = parseInt(msgContent.split(" ")[0]) - 1;
+        const newCategoryTitle = msgContent.replace((categoryNum+1) + " ", "").trim();
+
+        const categoryID = userList[categoryNum]._id;
+
+        const categoryListToCopy = await calculatorSchema.find({
+            category: categoryID
+        })
+
+        //Create new category
+        await userSchema.create({
+            author: msg.author.id,
+            title: newCategoryTitle
+        }).then(async res => {
+            const newID = res._id;
+
+            for (var i = 0; i < categoryListToCopy.length; i++) {
+                await calculatorSchema.create({
+                    quantity: categoryListToCopy[i].quantity,
+                    amount: categoryListToCopy[i].amount,
+                    description: categoryListToCopy[i].description,
+                    author: msg.author.id,
+                    category: newID
+                });
+            }
+
+            msg.reply("Successfully copied calculations from `" + userList[categoryNum].title + "` to `" + res.title + "`.");
+        }) */
     }
 }
 

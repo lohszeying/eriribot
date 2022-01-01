@@ -86,6 +86,9 @@ function UserCommand(msg, prefix, arg) {
         case 'gemslist':
             calCommand.commands.getGemsList(msg, prefix, keyword);
             break;
+        case 'gemscopy':
+            calCommand.commands.copyCategory(msg, prefix, keyword);
+            break;
         default:
             break;
     }
