@@ -16,7 +16,9 @@ commands.help = function(message, prefix) {
                 {command: prefix + "gemsclearcalculation", description: "Clear all added calculations within the category"},
                 {command: prefix + "gemscalculate", description: "Calculate the total amount of gems within a category"}],
 
-                [{command: prefix + "gemslist", description: "Display all your saved categories and calculations"}]];
+                [{command: prefix + "gemslist", description: "Display all your saved categories and calculations"},
+                {command: prefix + "gemscopy", description: "Copy your existing calculations from 1 category into new category"}]
+            ];
             
     let page = 1;
     const embed = new Discord.RichEmbed()
