@@ -332,31 +332,7 @@ commands.editCalculation = async function(msg, prefix, keyword) {
 
     if (msgContent === '') {
         msg.reply("Please edit new gems calculation with `" + prefix + keyword + " <category number> <calculation number> <quantity> <amount> <description>`, for example `"
-        + prefix + keyword + " 1 2 1 100 dailies`");
-
-        const userList = await userSchema.find({
-            author: msg.author.id
-        })
-
-        for (var j = 0; j < userList.length; j++) {
-            const categoryToGet = userList[j]._id;
-
-            const calculationList = await calculatorSchema.find({
-                category: categoryToGet
-            });
-            
-            const embed = new Discord.RichEmbed()
-                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems calculator", msg.author.avatarURL)
-                .setColor(0xF1C40F)
-            
-            for (var i = 0; i < calculationList.length; i++) {
-                embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
-            }
-    
-            embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list");
-            
-            msg.channel.send(embed);
-        }
+        + prefix + keyword + " 1 2 1 100 dailies`. Get consolidated category and calculation list with `!gemslist`");
     } else {
         try {
             const categoryNum = parseInt(msgContent.split(" ")[0]) - 1;
@@ -400,7 +376,7 @@ commands.editCalculation = async function(msg, prefix, keyword) {
                                 embed.addField((i+1) + ": " + updatedCalculationList[i].description,  "Quantity: " + updatedCalculationList[i].quantity + ", Amount: " + updatedCalculationList[i].amount + ", Total: " + (updatedCalculationList[i].quantity * updatedCalculationList[i].amount));
                             }
 
-                            embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded);
+                            embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
 
                             msg.channel.send(embed);
                         })
@@ -412,7 +388,6 @@ commands.editCalculation = async function(msg, prefix, keyword) {
                 }
             }
         } catch (e) {
-            console.log(e);
             msg.reply("Please make sure you have properly entered the bot command. Input `" + prefix + keyword + "` to get command steps again.")
         }
     }
@@ -497,7 +472,7 @@ commands.deleteCalculation = async function(msg, prefix, keyword) {
                             embed.addField((i+1) + ": " + updatedCalculationList[i].description,  "Quantity: " + updatedCalculationList[i].quantity + ", Amount: " + updatedCalculationList[i].amount + ", Total: " + (updatedCalculationList[i].quantity * updatedCalculationList[i].amount));
                         }
 
-                        embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded);
+                        embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
 
                         msg.channel.send(embed);
                     })
@@ -569,7 +544,6 @@ commands.clearCalculation = async function(msg, prefix, keyword) {
                     
                 })
                 .catch(collected => {
-                    console.log(collected)
                     msg.reply("Timeout. Please redo the command again.");
                 });
             })
@@ -637,7 +611,7 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
                                     embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
                                 }
         
-                                embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded)
+                                embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160))
         
                                 msg.channel.send(embed);
                             }
@@ -647,7 +621,7 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
                         }
     
                     }).catch(collected => {
-                        console.log(collected);
+
                     })
             
                 })
@@ -691,7 +665,7 @@ commands.getGemsList = async function(msg, prefix, keyword) {
             embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
         }
 
-        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list total: " + totalGemsNeeded);
+        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list total: " + totalGemsNeeded + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
         
         msg.channel.send(embed);
     }
