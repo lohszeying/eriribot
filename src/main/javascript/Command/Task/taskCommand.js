@@ -3,27 +3,6 @@ const taskSchema = require('./taskSchema');
 
 commands = new Object();
 
-commands.getAllTasks = async function(msg) {
-    const list = await taskSchema.find({
-        author: msg.author.id
-    })
-
-    let desc = "";
-    for (var i = 0; i < list.length; i++) {
-        let completed = "";
-        if (list[i].completed) {
-            //Task completed
-            completed = ":white_check_mark:";
-        } else {
-            completed = ":regional_indicator_x:";
-        }
-
-        desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
-    }
-
-    return desc;
-}
-
 commands.add = async function(msg, prefix, keyword) {
     const newMsg = msg.content.replace(prefix + keyword, "").trim();
 
@@ -141,10 +120,10 @@ commands.delete = async function(msg, prefix, keyword) {
                             await taskSchema.deleteOne(list[numToDel]);
                             msg.reply("Successfully deleted task: `" + taskToDelete.message + "`.");
                         } else {
-                            msg.reply("Please insert a proper number within the task list.")
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number within the task list.")
                         }
                     } else {
-                        msg.reply("Please redo the command again, then insert a number.")
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.")
                     }
                     
                 })
@@ -233,10 +212,10 @@ commands.edit = async function(msg, prefix, keyword) {
                                 msg.reply("successfully edited task `" + oldTask + "` to `" + updatedTask + "`.");
                             }
                         } else {
-                            msg.reply("Please insert a proper number within the task list and ensure that it is `<task number> <message to edit>`, for example `2 do homework`.")
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number within the task list and ensure that it is `<task number> <message to edit>`, for example `2 do homework`.")
                         }
                     } else {
-                        msg.reply("Please ensure it is `<task number> <message to edit>`, for example `2 do homework`.")
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then ensure it is `<task number> <message to edit>`, for example `2 do homework`.")
                     }
                 })
                 .catch(collected => {
@@ -325,15 +304,14 @@ commands.markComplete = async function(msg, prefix, keyword) {
                             msg.channel.send(updatedEmbed);
 
                         } else {
-                            msg.reply("Please insert a proper number within the task list.")
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number within the task list.")
                         }
                     } else {
-                        msg.reply("Please redo the command again, then insert a number.")
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.")
                     }
                     
                 })
                 .catch(collected => {
-                    console.log(collected);
                     msg.reply("Timeout. Please redo the command again.");
                 });
             })
@@ -419,15 +397,14 @@ commands.markIncomplete = async function(msg, prefix, keyword) {
                             msg.channel.send(updatedEmbed);
 
                         } else {
-                            msg.reply("Please insert a proper number within the task list.")
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number within the task list.")
                         }
                     } else {
-                        msg.reply("Please redo the command again, then insert a number.")
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.")
                     }
                     
                 })
                 .catch(collected => {
-                    console.log(collected);
                     msg.reply("Timeout. Please redo the command again.");
                 });
             })
