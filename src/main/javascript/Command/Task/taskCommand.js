@@ -1,9 +1,30 @@
 const Discord = require('discord.js');
 const taskSchema = require('./taskSchema');
 
-taskList = new Object();
+commands = new Object();
 
-taskList.add = async function(msg, prefix, keyword) {
+commands.getAllTasks = async function(msg) {
+    const list = await taskSchema.find({
+        author: msg.author.id
+    })
+
+    let desc = "";
+    for (var i = 0; i < list.length; i++) {
+        let completed = "";
+        if (list[i].completed) {
+            //Task completed
+            completed = ":white_check_mark:";
+        } else {
+            completed = ":regional_indicator_x:";
+        }
+
+        desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
+    }
+
+    return desc;
+}
+
+commands.add = async function(msg, prefix, keyword) {
     const newMsg = msg.content.replace(prefix + keyword, "").trim();
 
     if (newMsg === '') {
@@ -19,9 +40,16 @@ taskList.add = async function(msg, prefix, keyword) {
         })
 
         let desc = "";
-    
         for (var i = 0; i < list.length; i++) {
-            desc += (i+1) + ": " + list[i].message + "\n";
+            let completed = "";
+            if (list[i].completed) {
+                //Task completed
+                completed = ":white_check_mark:";
+            } else {
+                completed = ":regional_indicator_x:";
+            }
+
+            desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
         }
 
         const embed = new Discord.RichEmbed()
@@ -34,7 +62,7 @@ taskList.add = async function(msg, prefix, keyword) {
     }
 }
 
-taskList.list = async function(msg) {
+commands.list = async function(msg) {
     const list = await taskSchema.find({
         author: msg.author.id
     })
@@ -45,7 +73,15 @@ taskList.list = async function(msg) {
         let desc = "";
 
         for (var i = 0; i < list.length; i++) {
-            desc += (i+1) + ": " + list[i].message + "\n";
+            let completed = "";
+            if (list[i].completed) {
+                //Task completed
+                completed = ":white_check_mark:";
+            } else {
+                completed = ":regional_indicator_x:";
+            }
+
+            desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
         }
 
         const embed = new Discord.RichEmbed()
@@ -57,7 +93,7 @@ taskList.list = async function(msg) {
     }
 }
 
-taskList.delete = async function(msg, prefix, keyword) {
+commands.delete = async function(msg, prefix, keyword) {
     const newMsg = msg.content.replace(prefix + keyword, "").trim();
 
     if (newMsg === '') {
@@ -71,14 +107,22 @@ taskList.delete = async function(msg, prefix, keyword) {
             let desc = "";
     
             for (var i = 0; i < list.length; i++) {
-                desc += (i+1) + ": " + list[i].message + "\n";
+                let completed = "";
+                if (list[i].completed) {
+                    //Task completed
+                    completed = ":white_check_mark:";
+                } else {
+                    completed = ":regional_indicator_x:";
+                }
+
+                desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
             }
     
             let filter = m => m.author.id === msg.author.id
             const embed = new Discord.RichEmbed()
                 .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Task List", msg.author.avatarURL)
                 .setTitle("Task Command: Delete")
-                .addField("Here is your list of task. Please reply with the number to delete:", "```" + desc + "```")
+                .addField("Here is your list of task. Please reply with the number to delete:", desc)
                 .setColor(0xF1C40F)
             msg.reply(embed).then(() => {
             msg.channel.awaitMessages(filter, {
@@ -112,7 +156,7 @@ taskList.delete = async function(msg, prefix, keyword) {
     }
 }
 
-taskList.clear = async function(msg) {
+commands.clear = async function(msg) {
     const list = await taskSchema.find({
         author: msg.author.id
     })
@@ -126,7 +170,7 @@ taskList.clear = async function(msg) {
     
 }
 
-taskList.edit = async function(msg, prefix, keyword) {
+commands.edit = async function(msg, prefix, keyword) {
     const receivedMsg = msg.content.replace(prefix + keyword, "").trim();
 
     if (receivedMsg === '') {
@@ -140,7 +184,15 @@ taskList.edit = async function(msg, prefix, keyword) {
             let desc = "";
     
             for (var i = 0; i < list.length; i++) {
-                desc += (i+1) + ": " + list[i].message + "\n";
+                let completed = "";
+                if (list[i].completed) {
+                    //Task completed
+                    completed = ":white_check_mark:";
+                } else {
+                    completed = ":regional_indicator_x:";
+                }
+    
+                desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
             }
     
             let filter = m => m.author.id === msg.author.id
@@ -195,4 +247,192 @@ taskList.edit = async function(msg, prefix, keyword) {
     }
 }
 
-module.exports = { taskList };
+commands.markComplete = async function(msg, prefix, keyword) {
+    const newMsg = msg.content.replace(prefix + keyword, "").trim();
+
+    if (newMsg === '') {
+        const list = await taskSchema.find({
+            author: msg.author.id
+        })
+
+        if (list.length === 0) {
+            msg.reply("You do not have any saved task.");
+        } else {
+            let desc = "";
+    
+            for (var i = 0; i < list.length; i++) {
+                let completed = "";
+                if (list[i].completed) {
+                    //Task completed
+                    completed = ":white_check_mark:";
+                } else {
+                    completed = ":regional_indicator_x:";
+                }
+
+                desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
+            }
+    
+            let filter = m => m.author.id === msg.author.id
+            const embed = new Discord.RichEmbed()
+                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Task List", msg.author.avatarURL)
+                .setTitle("Task Command: Mark Complete")
+                .addField("Here is your list of task. Please reply with the number to mark task as complete:", desc)
+                .setColor(0xF1C40F)
+            msg.reply(embed).then(() => {
+            msg.channel.awaitMessages(filter, {
+                max: 1,
+                time: 10000,
+                errors: ['time']
+                })
+                .then(async message => {
+                    message = message.first();
+                    
+                    if (!isNaN(message)) {
+                        const num = parseInt(message.content)-1;
+
+                        if (parseInt(message.content) > 0 && parseInt(message.content) <= list.length) {
+                            const task = list[num].message;
+
+                            await taskSchema.updateOne(list[num], {
+                                completed: true,
+                            });
+
+                            msg.reply("Successfully updated task status for `" + task + "` to :white_check_mark:.");
+                            
+                            const updatedList = await taskSchema.find({
+                                author: msg.author.id
+                            })
+
+                            let updatedDesc = "";
+    
+                            for (var i = 0; i < updatedList.length; i++) {
+                                let completed = "";
+                                if (updatedList[i].completed) {
+                                    //Task completed
+                                    completed = ":white_check_mark:";
+                                } else {
+                                    completed = ":regional_indicator_x:";
+                                }
+
+                                updatedDesc += completed + " " + (i+1) + ": " + updatedList[i].message + "\n";
+                            }
+
+                            const updatedEmbed = new Discord.RichEmbed()
+                                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Task List", msg.author.avatarURL)
+                                .setTitle("Task Command: Mark Complete updated")
+                                .addField("Here is your updated list of task.", updatedDesc)
+                                .setColor(0xF1C40F)
+                            msg.channel.send(updatedEmbed);
+
+                        } else {
+                            msg.reply("Please insert a proper number within the task list.")
+                        }
+                    } else {
+                        msg.reply("Please redo the command again, then insert a number.")
+                    }
+                    
+                })
+                .catch(collected => {
+                    console.log(collected);
+                    msg.reply("Timeout. Please redo the command again.");
+                });
+            })
+        }
+    }
+}
+
+commands.markIncomplete = async function(msg, prefix, keyword) {
+    const newMsg = msg.content.replace(prefix + keyword, "").trim();
+
+    if (newMsg === '') {
+        const list = await taskSchema.find({
+            author: msg.author.id
+        })
+
+        if (list.length === 0) {
+            msg.reply("You do not have any saved task.");
+        } else {
+            let desc = "";
+    
+            for (var i = 0; i < list.length; i++) {
+                let completed = "";
+                if (list[i].completed) {
+                    //Task completed
+                    completed = ":white_check_mark:";
+                } else {
+                    completed = ":regional_indicator_x:";
+                }
+
+                desc += completed + " " + (i+1) + ": " + list[i].message + "\n";
+            }
+    
+            let filter = m => m.author.id === msg.author.id
+            const embed = new Discord.RichEmbed()
+                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Task List", msg.author.avatarURL)
+                .setTitle("Task Command: Mark Complete")
+                .addField("Here is your list of task. Please reply with the number to mark task as complete:", desc)
+                .setColor(0xF1C40F)
+            msg.reply(embed).then(() => {
+            msg.channel.awaitMessages(filter, {
+                max: 1,
+                time: 10000,
+                errors: ['time']
+                })
+                .then(async message => {
+                    message = message.first();
+                    
+                    if (!isNaN(message)) {
+                        const num = parseInt(message.content)-1;
+
+                        if (parseInt(message.content) > 0 && parseInt(message.content) <= list.length) {
+                            const task = list[num].message;
+
+                            await taskSchema.updateOne(list[num], {
+                                completed: false,
+                            });
+
+                            msg.reply("Successfully updated task status for `" + task + "` to :regional_indicator_x:.");
+                            
+                            const updatedList = await taskSchema.find({
+                                author: msg.author.id
+                            })
+
+                            let updatedDesc = "";
+    
+                            for (var i = 0; i < updatedList.length; i++) {
+                                let completed = "";
+                                if (updatedList[i].completed) {
+                                    //Task completed
+                                    completed = ":white_check_mark:";
+                                } else {
+                                    completed = ":regional_indicator_x:";
+                                }
+
+                                updatedDesc += completed + " " + (i+1) + ": " + updatedList[i].message + "\n";
+                            }
+
+                            const updatedEmbed = new Discord.RichEmbed()
+                                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Task List", msg.author.avatarURL)
+                                .setTitle("Task Command: Mark Incomplete updated")
+                                .addField("Here is your updated list of task.", updatedDesc)
+                                .setColor(0xF1C40F)
+                            msg.channel.send(updatedEmbed);
+
+                        } else {
+                            msg.reply("Please insert a proper number within the task list.")
+                        }
+                    } else {
+                        msg.reply("Please redo the command again, then insert a number.")
+                    }
+                    
+                })
+                .catch(collected => {
+                    console.log(collected);
+                    msg.reply("Timeout. Please redo the command again.");
+                });
+            })
+        }
+    }
+}
+
+module.exports = { commands };

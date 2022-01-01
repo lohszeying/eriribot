@@ -26,19 +26,25 @@ function UserCommand(msg, prefix, arg) {
             miscCommand.commands.echo(msg);
             break;
         case 'taskadd':
-            taskCommand.taskList.add(msg, prefix, keyword);
+            taskCommand.commands.add(msg, prefix, keyword);
             break;
         case 'taskl':
-            taskCommand.taskList.list(msg);
+            taskCommand.commands.list(msg);
             break;
         case 'taskdel':
-            taskCommand.taskList.delete(msg, prefix, keyword);
+            taskCommand.commands.delete(msg, prefix, keyword);
             break;
         case 'taskclear':
-            taskCommand.taskList.clear(msg);
+            taskCommand.commands.clear(msg);
             break;
         case 'taskedit':
-            taskCommand.taskList.edit (msg, prefix, keyword);
+            taskCommand.commands.edit(msg, prefix, keyword);
+            break;
+        case 'taskcomplete':
+            taskCommand.commands.markComplete(msg, prefix, keyword);
+            break;
+        case 'taskincomplete':
+            taskCommand.commands.markIncomplete(msg, prefix, keyword);
             break;
         case 'howmanydays':
             miscCommand.commands.howManyDays(msg, prefix, keyword);

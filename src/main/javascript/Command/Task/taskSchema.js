@@ -8,6 +8,11 @@ const schema = new mongoose.Schema({
     author: {
         type: String,
         required: true
+    },
+    completed: {
+        type: Boolean,
+        required: false,
+        default: false
     }
 })
 
