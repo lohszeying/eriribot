@@ -658,6 +658,10 @@ commands.getGemsListAll = async function(msg, prefix, keyword) {
         author: msg.author.id
     })
 
+    if (userList.length === 0) {
+        msg.reply("You have no saved category.");
+    }
+
     for (var j = 0; j < userList.length; j++) {
         const categoryToGet = userList[j]._id;
 
@@ -690,108 +694,112 @@ commands.getGemsList = async function(message, prefix, keyword) {
         author: message.author.id
     })
 
-    for (var j = 0; j < userList.length; j++) {
-        const categoryToGet = userList[j]._id;
-
-        const calculationList = await calculatorSchema.find({
-            category: categoryToGet
-        });
-
-        let totalGemsNeeded = 0;
-
-        let temporaryCalculation = [];
-
-        for (var i = 0; i < calculationList.length; i++) {
-            totalGemsNeeded += (calculationList[i].quantity * calculationList[i].amount);
-            temporaryCalculation.push({
-                calculationNumber: i+1,
-                description: calculationList[i].description,
-                quantity: calculationList[i].quantity,
-                amount: calculationList[i].amount,
-                total: totalGemsNeeded
+    if (userList.length === 0) {
+        message.reply("You have no saved category.");
+    } else {
+        for (var j = 0; j < userList.length; j++) {
+            const categoryToGet = userList[j]._id;
+    
+            const calculationList = await calculatorSchema.find({
+                category: categoryToGet
             });
+    
+            let totalGemsNeeded = 0;
+    
+            let temporaryCalculation = [];
+    
+            for (var i = 0; i < calculationList.length; i++) {
+                totalGemsNeeded += (calculationList[i].quantity * calculationList[i].amount);
+                temporaryCalculation.push({
+                    calculationNumber: i+1,
+                    description: calculationList[i].description,
+                    quantity: calculationList[i].quantity,
+                    amount: calculationList[i].amount,
+                    total: totalGemsNeeded
+                });
+            }
+    
+            pages.push({
+                categoryNumber: j+1,
+                title: userList[j].title,
+                total: totalGemsNeeded,
+                calculation: temporaryCalculation
+            })
         }
-
-        pages.push({
-            categoryNumber: j+1,
-            title: userList[j].title,
-            total: totalGemsNeeded,
-            calculation: temporaryCalculation
-        })
-    }
-
-    //Move embed page forward/backward
-    let page = 1;
-    const embed = new Discord.RichEmbed()
-        .setAuthor(message.author.username + "#" + message.author.discriminator + "'s Primogems calculator", message.author.avatarURL)
-        .setColor(0xF1C40F)
-        .setFooter(`Page ${page} of ${pages.length}`)
-
-    //Initialize page 1
-    embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
-    embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
-                        "\nTotal number of Primogems: " + pages[page-1].total + "**");
     
-    for (var i = 0; i < pages[page-1].calculation.length; i++) {
-       embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
-    }
+        //Move embed page forward/backward
+        let page = 1;
+        const embed = new Discord.RichEmbed()
+            .setAuthor(message.author.username + "#" + message.author.discriminator + "'s Primogems calculator", message.author.avatarURL)
+            .setColor(0xF1C40F)
+            .setFooter(`Page ${page} of ${pages.length}`)
     
-    message.channel.send(embed).then(msg => {
-        msg.react('⏪').then(r => {
-            msg.react('⏩');
-            //filters
-            const isBackwards = (reaction, user) => reaction.emoji.name === '⏪' && user.id === message.author.id;
-            const isForwards = (reaction, user) => reaction.emoji.name === '⏩' && user.id === message.author.id;
-
-            const backwards = msg.createReactionCollector(isBackwards);
-            const forwards = msg.createReactionCollector(isForwards);
-
-            backwards.on("collect", r => {
-                if (page === 1) {
+        //Initialize page 1
+        embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+        embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                            "\nTotal number of Primogems: " + pages[page-1].total + "**");
+        
+        for (var i = 0; i < pages[page-1].calculation.length; i++) {
+           embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+        }
+        
+        message.channel.send(embed).then(msg => {
+            msg.react('⏪').then(r => {
+                msg.react('⏩');
+                //filters
+                const isBackwards = (reaction, user) => reaction.emoji.name === '⏪' && user.id === message.author.id;
+                const isForwards = (reaction, user) => reaction.emoji.name === '⏩' && user.id === message.author.id;
+    
+                const backwards = msg.createReactionCollector(isBackwards);
+                const forwards = msg.createReactionCollector(isForwards);
+    
+                backwards.on("collect", r => {
+                    if (page === 1) {
+                        r.remove(message.author.id);
+                        return;
+                    }
+                    page--;
+                    embed.fields = [];
+    
+                    embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+                    embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                                        "\nTotal number of Primogems: " + pages[page-1].total + "**");
+                    
+                    for (var i = 0; i < pages[page-1].calculation.length; i++) {
+                    embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+                    }
+    
+                    embed.setFooter(`Page ${page} of ${pages.length}`);
+                    msg.edit(embed);
+    
                     r.remove(message.author.id);
-                    return;
-                }
-                page--;
-                embed.fields = [];
-
-                embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
-                embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
-                                    "\nTotal number of Primogems: " + pages[page-1].total + "**");
-                
-                for (var i = 0; i < pages[page-1].calculation.length; i++) {
-                embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
-                }
-
-                embed.setFooter(`Page ${page} of ${pages.length}`);
-                msg.edit(embed);
-
-                r.remove(message.author.id);
-            });
-
-            forwards.on("collect", async (r, user) => {
-                if (page === pages.length) {
+                });
+    
+                forwards.on("collect", async (r, user) => {
+                    if (page === pages.length) {
+                        r.remove(message.author.id);
+                        return;
+                    }
+                    page++;
+    
+                    embed.fields = [];
+    
+                    embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+                    embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                                        "\nTotal number of Primogems: " + pages[page-1].total + "**");
+                    
+                    for (var i = 0; i < pages[page-1].calculation.length; i++) {
+                    embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+                    }
+    
+                    embed.setFooter(`Page ${page} of ${pages.length}`);
+                    msg.edit(embed);
+    
                     r.remove(message.author.id);
-                    return;
-                }
-                page++;
-
-                embed.fields = [];
-
-                embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
-                embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
-                                    "\nTotal number of Primogems: " + pages[page-1].total + "**");
-                
-                for (var i = 0; i < pages[page-1].calculation.length; i++) {
-                embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
-                }
-
-                embed.setFooter(`Page ${page} of ${pages.length}`);
-                msg.edit(embed);
-
-                r.remove(message.author.id);
+                });
             });
         });
-    });
+    }
 }
 
 commands.copyCategory = async function(msg, prefix, keyword) {
