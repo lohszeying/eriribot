@@ -16,7 +16,8 @@ commands.help = function(message, prefix) {
                 {command: prefix + "gemsclearcalculation", description: "Clear all added calculations within the category"},
                 {command: prefix + "gemscalculate", description: "Calculate the total amount of gems within a category"}],
 
-                [{command: prefix + "gemslist", description: "Display all your saved categories and calculations"},
+                [{command: prefix + "gemslist", description: "Display all your saved categories and calculations in page format"},
+                {command: prefix + "gemslistall", description: "Display all your saved categories and calculations"},
                 {command: prefix + "gemscopy", description: "Copy your existing calculations from 1 category into new category"}]
             ];
             
@@ -559,7 +560,6 @@ commands.clearCalculation = async function(msg, prefix, keyword) {
                             msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.");
                         }
                     }
-                    
                 })
                 .catch(collected => {
                     msg.reply("Timeout. Please redo the command again.");
@@ -578,16 +578,15 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
         if (list.length <= 0) {
             msg.reply("You do not have any saved category.");
         } else {
-            msg.reply("Please indicate the category number to calculate.");
+            
         
-    
             let desc = "";
             for (var i = 0; i < list.length; i++) {
                 desc += (i+1) + ": " + list[i].title + "\n";
             }
     
             let filter = m => m.author.id === msg.author.id
-        
+            msg.reply("Please indicate the category number to calculate. To cancel command, type `cancel`.");
             const embed = new Discord.RichEmbed()
                 .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
                 .setTitle("Primogems Calculator Command: Calculate category")
@@ -637,7 +636,11 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
                             }
                         
                         } else {
-                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.")
+                            if (message.content.split(" ")[0].toLowerCase() === 'cancel') {
+                                msg.reply("`" + prefix + keyword + "` command cancelled.");
+                            } else {
+                                msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.");
+                            }
                         }
     
                     }).catch(collected => {
@@ -650,19 +653,7 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
     }
 }
 
-/*commands.getGemsList = async function(msg, prefix, keyword) {
-    const msgContent = msg.content.replace(prefix + keyword, "").trim();
-
-    const list = await userSchema.find({
-        author: msg.author.id
-    })
-
-    let desc = "";
-    for (var i = 0; i < list.length; i++) {
-        desc += (i+1) + ": " + list[i].title + "\n";
-    }
-
-    
+commands.getGemsListAll = async function(msg, prefix, keyword) {
     const userList = await userSchema.find({
         author: msg.author.id
     })
@@ -690,23 +681,13 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
         
         msg.channel.send(embed);
     }
-} */
+}
 
-commands.getGemsList = async function(msg, prefix, keyword) {
-    const msgContent = msg.content.replace(prefix + keyword, "").trim();
+commands.getGemsList = async function(message, prefix, keyword) {
+    let pages = [];
 
-    const list = await userSchema.find({
-        author: msg.author.id
-    })
-
-    let desc = "";
-    for (var i = 0; i < list.length; i++) {
-        desc += (i+1) + ": " + list[i].title + "\n";
-    }
-
-    
     const userList = await userSchema.find({
-        author: msg.author.id
+        author: message.author.id
     })
 
     for (var j = 0; j < userList.length; j++) {
@@ -715,23 +696,102 @@ commands.getGemsList = async function(msg, prefix, keyword) {
         const calculationList = await calculatorSchema.find({
             category: categoryToGet
         });
-        
-        const embed = new Discord.RichEmbed()
-            .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems calculator", msg.author.avatarURL)
-            .setColor(0xF1C40F)
 
         let totalGemsNeeded = 0;
 
+        let temporaryCalculation = [];
+
         for (var i = 0; i < calculationList.length; i++) {
             totalGemsNeeded += (calculationList[i].quantity * calculationList[i].amount);
-            embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
+            temporaryCalculation.push({
+                calculationNumber: i+1,
+                description: calculationList[i].description,
+                quantity: calculationList[i].quantity,
+                amount: calculationList[i].amount,
+                total: totalGemsNeeded
+            });
         }
 
-        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s Primogem list");
-        embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");        
-        
-        msg.channel.send(embed);
+        pages.push({
+            categoryNumber: j+1,
+            title: userList[j].title,
+            total: totalGemsNeeded,
+            calculation: temporaryCalculation
+        })
     }
+
+    //Move embed page forward/backward
+    let page = 1;
+    const embed = new Discord.RichEmbed()
+        .setAuthor(message.author.username + "#" + message.author.discriminator + "'s Primogems calculator", message.author.avatarURL)
+        .setColor(0xF1C40F)
+        .setFooter(`Page ${page} of ${pages.length}`)
+
+    //Initialize page 1
+    embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+    embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                        "\nTotal number of Primogems: " + pages[page-1].total + "**");
+    
+    for (var i = 0; i < pages[page-1].calculation.length; i++) {
+       embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+    }
+    
+    message.channel.send(embed).then(msg => {
+        msg.react('⏪').then(r => {
+            msg.react('⏩');
+            //filters
+            const isBackwards = (reaction, user) => reaction.emoji.name === '⏪' && user.id === message.author.id;
+            const isForwards = (reaction, user) => reaction.emoji.name === '⏩' && user.id === message.author.id;
+
+            const backwards = msg.createReactionCollector(isBackwards);
+            const forwards = msg.createReactionCollector(isForwards);
+
+            backwards.on("collect", r => {
+                if (page === 1) {
+                    r.remove(message.author.id);
+                    return;
+                }
+                page--;
+                embed.fields = [];
+
+                embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+                embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                                    "\nTotal number of Primogems: " + pages[page-1].total + "**");
+                
+                for (var i = 0; i < pages[page-1].calculation.length; i++) {
+                embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+                }
+
+                embed.setFooter(`Page ${page} of ${pages.length}`);
+                msg.edit(embed);
+
+                r.remove(message.author.id);
+            });
+
+            forwards.on("collect", async (r, user) => {
+                if (page === pages.length) {
+                    r.remove(message.author.id);
+                    return;
+                }
+                page++;
+
+                embed.fields = [];
+
+                embed.setTitle("[" + pages[page-1].categoryNumber + "] " + pages[page-1].title + "'s Primogems List");
+                embed.setDescription("**Total number of rolls: " + Math.floor(pages[page-1].total/160) + 
+                                    "\nTotal number of Primogems: " + pages[page-1].total + "**");
+                
+                for (var i = 0; i < pages[page-1].calculation.length; i++) {
+                embed.addField((i+1) + ": " + pages[page-1].calculation[i].description, "Quantity: " + pages[page-1].calculation[i].quantity + ", Amount: " + pages[page-1].calculation[i].amount + ", Total: " + (pages[page-1].calculation[i].quantity * pages[page-1].calculation[i].amount));
+                }
+
+                embed.setFooter(`Page ${page} of ${pages.length}`);
+                msg.edit(embed);
+
+                r.remove(message.author.id);
+            });
+        });
+    });
 }
 
 commands.copyCategory = async function(msg, prefix, keyword) {
@@ -749,12 +809,13 @@ commands.copyCategory = async function(msg, prefix, keyword) {
 
 
         let filter = m => m.author.id === msg.author.id
+        msg.reply("Please insert `<category number> <new title>`, for example, `1 Ayato` to copy category number 1 with new category title. To cancel command, type `cancel`.");
         const embed = new Discord.RichEmbed()
             .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
             .setTitle("Primogems Calculator Command: Copy category")
-            .addField("Here are list of categories you have saved. Please insert `<category number> <new title>`, for example, `1 Ayato` to copy category number 1 with new title.", desc)
+            .addField("Here are list of categories you have saved:", desc)
             .setColor(0xF1C40F)
-        msg.reply(embed).then(() => {
+        msg.channel.send(embed).then(() => {
             msg.channel.awaitMessages(filter, {
                 max: 1,
                 time: 10000,
@@ -793,48 +854,22 @@ commands.copyCategory = async function(msg, prefix, keyword) {
                                 msg.reply("Successfully copied calculations from `" + userList[categoryNum].title + "` to `" + res.title + "`.");
                             })
                         } else {
-                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number followed by new title.")
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a proper number followed by new category title.")
                         }
                     } else {
-                        msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number followed by new title.")
+                        if (message.content.split(" ")[0].toLowerCase() === 'cancel') {
+                            msg.reply("`" + prefix + keyword + "` command cancelled.");
+                        } else {
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number followed by new category title.");
+                        }
                     }
                     
                 })
                 .catch(collected => {
-                    console.log(collected);
                     msg.reply("Timeout. Please redo the command again.");
                 });
             
         })
-    } else {
-        /*const categoryNum = parseInt(msgContent.split(" ")[0]) - 1;
-        const newCategoryTitle = msgContent.replace((categoryNum+1) + " ", "").trim();
-
-        const categoryID = userList[categoryNum]._id;
-
-        const categoryListToCopy = await calculatorSchema.find({
-            category: categoryID
-        })
-
-        //Create new category
-        await userSchema.create({
-            author: msg.author.id,
-            title: newCategoryTitle
-        }).then(async res => {
-            const newID = res._id;
-
-            for (var i = 0; i < categoryListToCopy.length; i++) {
-                await calculatorSchema.create({
-                    quantity: categoryListToCopy[i].quantity,
-                    amount: categoryListToCopy[i].amount,
-                    description: categoryListToCopy[i].description,
-                    author: msg.author.id,
-                    category: newID
-                });
-            }
-
-            msg.reply("Successfully copied calculations from `" + userList[categoryNum].title + "` to `" + res.title + "`.");
-        }) */
     }
 }
 
