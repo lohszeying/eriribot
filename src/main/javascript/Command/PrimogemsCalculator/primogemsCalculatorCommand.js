@@ -10,8 +10,8 @@ commands.help = function(message, prefix) {
                 {command: prefix + "gemseditcategory", description: "Edit category name"},
                 {command: prefix + "gemsdeletecategory", description: "Delete category"},
                 {command: prefix + "gemsclearcategory", description: "Clear all categories added"},
-                {command: prefix + "gemsaddcalculation", description: "Add calculation to the category"},
-                {command: prefix + "gemseditcalculation", description: "Edit added calculation within the category"},
+                {command: prefix + "gemsaddcalculation <category number> <quantity> <amount> <description>", description: "Add calculation to the category"},
+                {command: prefix + "gemseditcalculation <category number> <calculation number> <quantity> <amount> <description>", description: "Edit added calculation within the category"},
                 {command: prefix + "gemsdeletecalculation", description: "Delete added calculation within the category"},
                 {command: prefix + "gemsclearcalculation", description: "Clear all added calculations within the category"},
                 {command: prefix + "gemscalculate", description: "Calculate the total amount of gems within a category"}],
@@ -102,11 +102,11 @@ commands.addCategory = async function(msg, prefix, keyword) {
 
         const embed = new Discord.RichEmbed()
             .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
-            .setTitle("Primogems Calculator Command: Add new category")
+            .setTitle("Primogems Calculator Command: Add category")
             .addField("Successfully added new category:", msgContent)
             .addField("Here are list of categories you have saved:", desc)
             .setColor(0xF1C40F)
-        msg.reply(embed);
+        msg.channel.send(embed);
     }
 }
 
@@ -125,7 +125,7 @@ commands.getCategory = async function(msg, prefix, keyword) {
         .setTitle("Primogems Calculator Command: Get category")
         .addField("Here are list of categories you have saved:", desc)
         .setColor(0xF1C40F)
-    msg.reply(embed);
+    msg.channel.send(embed);
 }
 
 commands.editCategory = async function(msg, prefix, keyword) {
@@ -146,12 +146,13 @@ commands.editCategory = async function(msg, prefix, keyword) {
 
             let filter = m => m.author.id === msg.author.id;
 
+            msg.reply("Please edit category name with `<category number> <new name>`.")
             const embed = new Discord.RichEmbed()
                 .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
                 .setTitle("Primogems Calculator Command: Edit category")
-                .addField("Here are list of categories you have saved. Please edit category name with `<category number> <new name>`.", desc)
+                .addField("Here are list of categories you have saved:", desc)
                 .setColor(0xF1C40F)
-            msg.reply(embed).then(() => {
+            msg.channel.send(embed).then(() => {
                 msg.channel.awaitMessages(filter, {
                     max: 1,
                     time: 10000,
@@ -162,7 +163,7 @@ commands.editCategory = async function(msg, prefix, keyword) {
                         const num = parseInt(message.content)-1;
                         
                         if (!isNaN(num)) {
-                            if (parseInt(message.content) > 0 && parseInt(message.content) <= list.length) {
+                            if (num+1 > 0 && num+1 <= list.length) {
                                 const newMsg = message.content.replace(message.content.split(" ")[0] + " ", "").trim();
 
                                 if (message.content.split(" ").length < 2) {
@@ -214,12 +215,13 @@ commands.deleteCategory = async function(msg, prefix, keyword) {
 
         let filter = m => m.author.id === msg.author.id;
 
+        msg.reply("Please reply with the number to delete.")
         const embed = new Discord.RichEmbed()
             .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
             .setTitle("Primogems Calculator Command: Delete category")
-            .addField("Here are list of categories you have saved.  Please reply with the number to delete:", desc)
+            .addField("Here are list of categories you have saved:", desc)
             .setColor(0xF1C40F)
-        msg.reply(embed).then(() => {
+        msg.channel.send(embed).then(() => {
             msg.channel.awaitMessages(filter, {
                 max: 1,
                 time: 10000,
@@ -231,7 +233,7 @@ commands.deleteCategory = async function(msg, prefix, keyword) {
                     
                     if (!isNaN(num)) {
                         
-                        if (parseInt(message.content) > 0 && parseInt(message.content) <= list.length) {
+                        if (num+1 > 0 && num+1 <= list.length) {
                             const taskToDelete = list[num];
                             await userSchema.deleteOne(list[num]);
                             await calculatorSchema.deleteMany({category: taskToDelete._id});
@@ -258,14 +260,32 @@ commands.clearCategory = async function(msg, prefix, keyword) {
     const msgContent = msg.content.replace(prefix + keyword, "").trim();
 
     if (msgContent === '') {
-        const userList = await userSchema.find({
-            author: msg.author.id
-        })
+        let filter = m => m.author.id === msg.author.id
+        msg.reply("Are you sure you want to delete all your saved categories and calculations? Initiating this action is irreversible. Reply `yes` to delete all, reply `no` to cancel.").then(() => {
+            msg.channel.awaitMessages(filter, {
+                max: 1,
+                time: 10000,
+                errors: ['time']
+                })
+                .then(async message => {
+                    message = message.first();
+                    const receivedMsg = message.content.split(" ")[0];
 
-        await userSchema.deleteMany({author: msg.author.id}).then(async res => {
-            await calculatorSchema.deleteMany({author: msg.author.id}).then(() => {
-                msg.reply("Successfully cleared all categories.")
-            })
+                    if (receivedMsg.toLowerCase() === 'yes') {
+                        await userSchema.deleteMany({author: msg.author.id}).then(async res => {
+                            await calculatorSchema.deleteMany({author: msg.author.id}).then(() => {
+                                msg.reply("Successfully cleared all categories.")
+                            })
+                        })
+                    } else if (receivedMsg.toLowerCase() === 'no') {
+                        msg.reply("`" + prefix + keyword + "` command cancelled.");
+                    } else {
+                        msg.reply("Please redo the command `" + prefix + keyword + "` again if you wish to delete all your saved categories and calculations.");
+                    }
+
+                }).catch(collected => {
+                    msg.reply("Timeout. Please redo the command again.");
+                });
         })
     }
 }
@@ -284,11 +304,11 @@ commands.addCalculation = async function(msg, prefix, keyword) {
 
     if (msgContent === '') {
         msg.reply("Please add new gems calculation with `" + prefix + keyword + " <category number> <quantity> <amount> <description>`, for example `"
-        + prefix + keyword + " 2 10 150 Daily commission and welkin`");
+        + prefix + keyword + " 2 10 150 Daily commission and welkin`.");
 
         const embed = new Discord.RichEmbed()
             .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Category List", msg.author.avatarURL)
-            .setTitle("Primogems Calculator Command: Add new category")
+            .setTitle("Primogems Calculator Command: Add calculation")
             .addField("Here are list of categories you have saved:", desc)
             .setColor(0xF1C40F)
         msg.channel.send(embed);
@@ -304,18 +324,32 @@ commands.addCalculation = async function(msg, prefix, keyword) {
             })
             
             if (!isNaN(categoryNum) && !isNaN(quantity) && !isNaN(amount)) {
-                await calculatorSchema.create({
-                    quantity: quantity,
-                    amount: amount,
-                    description: description,
-                    author: msg.author.id,
-                    category: categoryList[categoryNum]
-                }).then(res => {
-                    msg.reply("Successfully added new calculation `" + res.description + "` to category `" + res.category.title + "`.");
-                })
+                if (categoryNum+1 > 0 && categoryNum+1 <= categoryList.length) {
+                    await calculatorSchema.create({
+                        quantity: quantity,
+                        amount: amount,
+                        description: description,
+                        author: msg.author.id,
+                        category: categoryList[categoryNum]
+                    }).then(res => {
+                        msg.reply("Successfully added new calculation `" + res.description + "` to category `" + res.category.title + "`.");
+                    })
+                } else {
+                    msg.reply("Category number out of range. Please retry adding new gems calculation with `" + prefix + keyword + " <category number> <quantity> <amount> <description>`, for example `"
+                    + prefix + keyword + " 2 10 150 Daily commission and welkin`.");
+
+                    const embed = new Discord.RichEmbed()
+                        .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Category List", msg.author.avatarURL)
+                        .setTitle("Primogems Calculator Command: Add calculation")
+                        .addField("Here are list of categories you have saved:", desc)
+                        .setColor(0xF1C40F)
+                    msg.channel.send(embed);
+
+                }
             }
         } catch (e) {
-            
+            msg.reply("Please retry adding new gems calculation with `" + prefix + keyword + " <category number> <quantity> <amount> <description>`, for example `"
+                + prefix + keyword + " 2 10 150 Daily commission and welkin`.");
         }
     }
 }
@@ -334,7 +368,7 @@ commands.editCalculation = async function(msg, prefix, keyword) {
 
     if (msgContent === '') {
         msg.reply("Please edit new gems calculation with `" + prefix + keyword + " <category number> <calculation number> <quantity> <amount> <description>`, for example `"
-        + prefix + keyword + " 1 2 1 100 dailies`. Get consolidated category and calculation list with `!gemslist`");
+        + prefix + keyword + " 1 2 1 100 dailies`. Get consolidated category and calculation list with `!gemslist`.");
     } else {
         try {
             const categoryNum = parseInt(msgContent.split(" ")[0]) - 1;
@@ -378,7 +412,8 @@ commands.editCalculation = async function(msg, prefix, keyword) {
                                 embed.addField((i+1) + ": " + updatedCalculationList[i].description,  "Quantity: " + updatedCalculationList[i].quantity + ", Amount: " + updatedCalculationList[i].amount + ", Total: " + (updatedCalculationList[i].quantity * updatedCalculationList[i].amount));
                             }
 
-                            embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
+                            embed.setTitle(userList[categoryNum].title + "'s Primogem list");
+                            embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");
 
                             msg.channel.send(embed);
                         })
@@ -409,33 +444,7 @@ commands.deleteCalculation = async function(msg, prefix, keyword) {
 
     if (msgContent === '') {
         msg.reply("Please delete gems calculation with `" + prefix + keyword + " <category number> <calculation number>`, for example `"
-        + prefix + keyword + " 1 2`");
-
-        const userList = await userSchema.find({
-            author: msg.author.id
-        })
-
-        for (var j = 0; j < userList.length; j++) {
-            const categoryToGet = userList[j]._id;
-
-            const calculationList = await calculatorSchema.find({
-                category: categoryToGet
-            });
-            
-            const embed = new Discord.RichEmbed()
-                .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems calculator", msg.author.avatarURL)
-                .setColor(0xF1C40F)
-    
-            for (var i = 0; i < calculationList.length; i++) {
-                embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
-            }
-    
-            embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list");
-            
-            msg.channel.send(embed);
-        }
-        
-        
+        + prefix + keyword + " 1 2`. Get consolidated category and calculation list with `!gemslist`.");
     } else {
         try {
             const categoryNum = parseInt(msgContent.split(" ")[0]) - 1;
@@ -474,7 +483,8 @@ commands.deleteCalculation = async function(msg, prefix, keyword) {
                             embed.addField((i+1) + ": " + updatedCalculationList[i].description,  "Quantity: " + updatedCalculationList[i].quantity + ", Amount: " + updatedCalculationList[i].amount + ", Total: " + (updatedCalculationList[i].quantity * updatedCalculationList[i].amount));
                         }
 
-                        embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
+                        embed.setTitle(userList[categoryNum].title + "'s Primogem list");
+                        embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");
 
                         msg.channel.send(embed);
                     })
@@ -492,10 +502,6 @@ commands.deleteCalculation = async function(msg, prefix, keyword) {
 commands.clearCalculation = async function(msg, prefix, keyword) {
     const msgContent = msg.content.replace(prefix + keyword, "").trim();
 
-    const list = await userSchema.find({
-        author: msg.author.id
-    })
-
     if (msgContent === '') {
         const list = await userSchema.find({
             author: msg.author.id
@@ -507,11 +513,11 @@ commands.clearCalculation = async function(msg, prefix, keyword) {
         }
 
         let filter = m => m.author.id === msg.author.id
-    
+        msg.reply("Please delete gems calculation with `<category number>`, for example `1`. To cancel command, type `cancel`.")
         const embed = new Discord.RichEmbed()
             .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
-            .setTitle("Primogems Calculator Command: Get category")
-            .addField("Here are list of categories you have saved. Please delete gems calculation with `<category number>`, for example `1`", desc)
+            .setTitle("Primogems Calculator Command: Clear calculation")
+            .addField("Here are list of categories you have saved:", desc)
             .setColor(0xF1C40F)
         msg.channel.send(embed).then(() => {
             msg.channel.awaitMessages(filter, {
@@ -521,26 +527,36 @@ commands.clearCalculation = async function(msg, prefix, keyword) {
                 })
                 .then(async message => {
                     message = message.first();
-
                     const categoryNum = parseInt(message.content) - 1;
                     
                     const userList = await userSchema.find({
                         author: msg.author.id
                     })
-        
-                    const categoryToGet = userList[categoryNum]._id;
-        
-                    const calculationList = await calculatorSchema.find({
-                        category: categoryToGet
-                    });
                     
                     if (!isNaN(categoryNum)) {
-                        if (calculationList.length > 0) {
-                            await calculatorSchema.deleteMany({category: calculationList[0].category}).then(async res => {
-                                msg.reply("Successfully deleted every calculations saved in `" + userList[categoryNum].title + "`.");
-                            })
+                        if (categoryNum+1 > 0 && categoryNum+1 <= userList.length) {
+                            const categoryToGet = userList[categoryNum]._id;
+    
+                            const calculationList = await calculatorSchema.find({
+                                category: categoryToGet
+                            });
+
+                            if (calculationList.length > 0) {
+                                await calculatorSchema.deleteMany({category: calculationList[0].category}).then(async res => {
+                                    msg.reply("Successfully deleted every calculations saved in `" + userList[categoryNum].title + "`.");
+                                })
+                            } else {
+                                msg.reply("There is no calculation to clear. Please add a new calculation to the category first.");
+                            }
                         } else {
-                            msg.reply("There is no calculation to clear. Please add a new calculation to the category first.");
+                            msg.reply("Category number out of range. Please redo the command `" + prefix + keyword + "` again.")
+                        }
+                        
+                    } else {
+                        if (message.content.split(" ")[0].toLowerCase() === 'cancel') {
+                            msg.reply("`" + prefix + keyword + "` command cancelled.");
+                        } else {
+                            msg.reply("Please redo the command `" + prefix + keyword + "` again, then insert a number.");
                         }
                     }
                     
@@ -574,7 +590,7 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
         
             const embed = new Discord.RichEmbed()
                 .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems Calculator List", msg.author.avatarURL)
-                .setTitle("Primogems Calculator Command: Get category")
+                .setTitle("Primogems Calculator Command: Calculate category")
                 .addField("Here are list of categories you have saved:", desc)
                 .setColor(0xF1C40F)
             msg.channel.send(embed).then(() => {
@@ -613,8 +629,10 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
                                     embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
                                 }
         
-                                embed.setTitle(userList[categoryNum].title + "'s primogem calculation total: " + totalGemsNeeded  + ", Number of rolls: " + Math.floor(totalGemsNeeded/160))
-        
+                                embed.setTitle(userList[categoryNum].title + "'s Primogem list");
+                                embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");
+
+
                                 msg.channel.send(embed);
                             }
                         
@@ -631,6 +649,48 @@ commands.calculateCategory = async function(msg, prefix, keyword) {
         
     }
 }
+
+/*commands.getGemsList = async function(msg, prefix, keyword) {
+    const msgContent = msg.content.replace(prefix + keyword, "").trim();
+
+    const list = await userSchema.find({
+        author: msg.author.id
+    })
+
+    let desc = "";
+    for (var i = 0; i < list.length; i++) {
+        desc += (i+1) + ": " + list[i].title + "\n";
+    }
+
+    
+    const userList = await userSchema.find({
+        author: msg.author.id
+    })
+
+    for (var j = 0; j < userList.length; j++) {
+        const categoryToGet = userList[j]._id;
+
+        const calculationList = await calculatorSchema.find({
+            category: categoryToGet
+        });
+        
+        const embed = new Discord.RichEmbed()
+            .setAuthor(msg.author.username + "#" + msg.author.discriminator + "'s Primogems calculator", msg.author.avatarURL)
+            .setColor(0xF1C40F)
+
+        let totalGemsNeeded = 0;
+
+        for (var i = 0; i < calculationList.length; i++) {
+            totalGemsNeeded += (calculationList[i].quantity * calculationList[i].amount);
+            embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
+        }
+
+        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s Primogem list");
+        embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");        
+        
+        msg.channel.send(embed);
+    }
+} */
 
 commands.getGemsList = async function(msg, prefix, keyword) {
     const msgContent = msg.content.replace(prefix + keyword, "").trim();
@@ -667,7 +727,8 @@ commands.getGemsList = async function(msg, prefix, keyword) {
             embed.addField((i+1) + ": " + calculationList[i].description,  "Quantity: " + calculationList[i].quantity + ", Amount: " + calculationList[i].amount + ", Total: " + (calculationList[i].quantity * calculationList[i].amount));
         }
 
-        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s primogem list total: " + totalGemsNeeded + ", Number of rolls: " + Math.floor(totalGemsNeeded/160));
+        embed.setTitle("[" + (j+1) + "] " + userList[j].title + "'s Primogem list");
+        embed.setDescription("**Total number of rolls: " + Math.floor(totalGemsNeeded/160) + "\nTotal Number of Primogems: " + totalGemsNeeded + "**");        
         
         msg.channel.send(embed);
     }

@@ -36,7 +36,7 @@ function UserCommand(msg, prefix, arg) {
             taskCommand.commands.delete(msg, prefix, keyword);
             break;
         case 'taskclear':
-            taskCommand.commands.clear(msg);
+            taskCommand.commands.clear(msg, prefix, keyword);
             break;
         case 'taskedit':
             taskCommand.commands.edit(msg, prefix, keyword);
